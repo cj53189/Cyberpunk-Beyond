@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Netrunner’s Companion — Cyberpunk RPG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>⚡ Netrunner’s Companion</h1>
+    <nav class="tabs" id="tabs">
+      <button data-tab="sheet" class="active">Character</button>
+      <button data-tab="builder">Builder</button>
+      <button data-tab="gear">Gear & Cyberware</button>
+      <button data-tab="roller">Dice Roller</button>
+      <button data-tab="data">Import/Export</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- CHARACTER SHEET -->
+    <section class="tab-content" id="tab-sheet">
+      <div class="card grid-2">
+        <div>
+          <label>Name <input id="name" /></label>
+          <label>Role <input id="role" placeholder="Solo, Netrunner, Tech, Fixer…" /></label>
+          <label>Origin <input id="origin" placeholder="Sprawl, Arcology, Nomad Clan…" /></label>
+          <label>Street Cred <input id="streetCred" type="number" min="0"/></label>
+          <label>Credits (¥) <input id="credits" type="number" min="0"/></label>
+        </div>
+        <div>
+          <h3>Stats</h3>
+          <div class="stats-grid" id="statsGrid"></div>
+          <div class="hpgrid">
+            <label>HP <input id="hp" type="number" min="0"/></label>
+            <label>Max HP <input id="maxHp" type="number" min="1" /></label>
+            <label>Armor <input id="armor" type="number" min="0"/></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Skills</h3>
+        <div id="skillsList" class="skills-list"></div>
+        <button class="ghost" id="addSkillBtn">+ Add Skill</button>
+      </div>
+
+      <div class="card">
+        <h3>Notes</h3>
+        <textarea id="notes" rows="6" placeholder="Contacts, debts, grudges, warrants, unfinished business…"></textarea>
+      </div>
+
+      <div class="savebar">
+        <button id="saveBtn">Save</button>
+        <span id="saveStatus" class="muted"></span>
+      </div>
+    </section>
+
+    <!-- BUILDER -->
+    <section class="tab-content hidden" id="tab-builder">
+      <div class="card">
+        <h3>Quick Builder</h3>
+        <div class="builder-grid">
+          <label>Template
+            <select id="builderTemplate">
+              <option value="solo">Solo (combat)</option>
+              <option value="netrunner">Netrunner (hacking)</option>
+              <option value="tech">Tech (crafting)</option>
+              <option value="fixer">Fixer (social)</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+          <label>Point Buy (stat pool)
+            <input id="pointPool" type="number" min="0" value="62"/>
+          </label>
+          <button id="distributeBtn">Auto-Distribute</button>
+        </div>
+        <p class="muted">Builder adjusts core stats and recommended skills; tweak on the Character tab after.</p>
+      </div>
+    </section>
+
+    <!-- GEAR & CYBERWARE -->
+    <section class="tab-content hidden" id="tab-gear">
+      <div class="card grid-2">
+        <div>
+          <h3>Gear</h3>
+          <ul id="gearList" class="list"></ul>
+          <div class="row">
+            <input id="gearName" placeholder="Item name"/>
+            <input id="gearQty" type="number" min="1" value="1" title="Qty"/>
+            <button id="addGearBtn">+ Add</button>
+          </div>
+        </div>
+        <div>
+          <h3>Cyberware</h3>
+          <ul id="wareList" class="list"></ul>
+          <div class="row">
+            <input id="wareName" placeholder="Cyberware name"/>
+            <input id="wareSlots" type="number" min="0" value="1" title="Slots"/>
+            <select id="wareSlotType">
+              <option>Neural</option><option>Cyberarm</option><option>Cyberleg</option>
+              <option>Ocular</option><option>Dermal</option><option>Internal</option>
+            </select>
+            <button id="addWareBtn">+ Install</button>
+          </div>
+          <div class="muted tiny">Track slots with your table’s rules. This app enforces nothing; it just totals.</div>
+          <div id="slotSummary" class="muted"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DICE ROLLER -->
+    <section class="tab-content hidden" id="tab-roller">
+      <div class="card">
+        <h3>Rules Profile</h3>
+        <div class="rules-grid">
+          <label>System
+            <select id="system">
+              <option value="d10-add">d10 + Stat + Skill vs Target (e.g., Cyberpunk)</option>
+              <option value="d6-pool">d6 Pool; 5–6 = success (e.g., Shadowrun)</option>
+            </select>
+          </label>
+          <label>Glitch on
+            <select id="glitch">
+              <option value="none">None</option>
+              <option value="onesHalf">Half dice are 1s</option>
+              <option value="onesAny">Any 1 triggers minor glitch</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="card grid-3">
+        <div>
+          <h3>Roll</h3>
+          <label>Stat <input id="rollStat" type="number" value="6"/></label>
+          <label>Skill <input id="rollSkill" type="number" value="4"/></label>
+          <label>Dice (pool/bonus) <input id="rollDice" type="number" value="0"/></label>
+          <label>Target <input id="rollTarget" type="number" value="15"/></label>
+          <button id="rollBtn">Roll It</button>
+        </div>
+        <div>
+          <h3>Result</h3>
+          <div id="rollOut" class="roller-out"></div>
+        </div>
+        <div>
+          <h3>Saved Macros</h3>
+          <ul id="macroList" class="list"></ul>
+          <div class="row">
+            <input id="macroName" placeholder="e.g., Handgun shot"/>
+            <button id="saveMacroBtn">+ Save Macro</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DATA -->
+    <section class="tab-content hidden" id="tab-data">
+      <div class="card grid-2">
+        <div>
+          <h3>Export</h3>
+          <button id="exportBtn">Download Character JSON</button>
+        </div>
+        <div>
+          <h3>Import</h3>
+          <input id="importFile" type="file" accept="application/json"/>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span class="muted tiny">Local-first • Saves to your browser • No trackers • Made for fast table play</span>
+  </footer>
+
+  <script>
+    // ---------- Data Model ----------
+    const DEFAULT_STATS = ["Body","Reflex","Int","Tech","Cool","Will","Luck","Move"];
+    const state = {
+      version: 1,
+      name: "", role: "", origin: "", streetCred: 0, credits: 0,
+      hp: 20, maxHp: 20, armor: 0,
+      stats: Object.fromEntries(DEFAULT_STATS.map(s => [s, 5])),
+      skills: [{name:"Athletics", value:2}, {name:"Handguns", value:3}, {name:"Hacking", value:4}],
+      gear: [],
+      cyberware: [],
+      notes: "",
+      macros: [],
+      rules: { system: "d10-add", glitch: "none" }
+    };
+
+    // ---------- Storage ----------
+    const KEY = "netrunner_companion_v1";
+    function save() { localStorage.setItem(KEY, JSON.stringify(state)); stamp("Saved."); }
+    function load() {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return;
+      try { Object.assign(state, JSON.parse(raw)); } catch {}
+    }
+
+    // ---------- UI Helpers ----------
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => document.querySelectorAll(sel);
+    function stamp(msg){ const el=$("#saveStatus"); el.textContent=msg; setTimeout(()=>el.textContent="",1500); }
+    function wipe(el){ while(el.firstChild) el.removeChild(el.firstChild); }
+
+    // Tabs
+    $$("#tabs button").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        $$("#tabs button").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        const target = btn.dataset.tab;
+        $$(".tab-content").forEach(sec=>sec.classList.add("hidden"));
+        $("#tab-"+target).classList.remove("hidden");
+      });
+    });
+
+    // ---------- Renderers ----------
+    function renderStats(){
+      const grid = $("#statsGrid"); wipe(grid);
+      DEFAULT_STATS.forEach(s=>{
+        const wrap = document.createElement("label");
+        wrap.innerHTML = \`\${s} <input type="number" min="0" value="\${state.stats[s]}" data-stat="\${s}"/>\`;
+        grid.appendChild(wrap);
+      });
+      grid.querySelectorAll("input").forEach(inp=>{
+        inp.addEventListener("change", e=>{
+          const key = e.target.dataset.stat;
+          state.stats[key] = Number(e.target.value)||0;
+          save();
+        });
+      });
+    }
+
+    function renderTop(){
+      $("#name").value = state.name;
+      $("#role").value = state.role;
+      $("#origin").value = state.origin;
+      $("#streetCred").value = state.streetCred;
+      $("#credits").value = state.credits;
+      $("#hp").value = state.hp;
+      $("#maxHp").value = state.maxHp;
+      $("#armor").value = state.armor;
+      $("#notes").value = state.notes;
+    }
+
+    function renderSkills(){
+      const list = $("#skillsList"); wipe(list);
+      state.skills.forEach((sk,i)=>{
+        const row = document.createElement("div");
+        row.className="row";
+        row.innerHTML = \`
+          <input value="\${sk.name}" data-i="\${i}" data-k="name" />
+          <input type="number" value="\${sk.value}" data-i="\${i}" data-k="value" />
+          <button data-i="\${i}" class="danger">✕</button>
+        \`;
+        list.appendChild(row);
+      });
+      list.querySelectorAll("input").forEach(inp=>{
+        inp.addEventListener("change", e=>{
+          const i = Number(e.target.dataset.i), k = e.target.dataset.k;
+          state.skills[i][k] = (k==="value") ? Number(e.target.value)||0 : e.target.value;
+          save();
+        });
+      });
+      list.querySelectorAll("button.danger").forEach(btn=>{
+        btn.addEventListener("click", e=>{
+          const i = Number(e.target.dataset.i);
+          state.skills.splice(i,1); renderSkills(); save();
+        });
+      });
+    }
+
+    function renderGear(){
+      const list=$("#gearList"); wipe(list);
+      state.gear.forEach((g,i)=>{
+        const li=document.createElement("li");
+        li.innerHTML=\`<span>\${g.name} ×\${g.qty}</span>
+          <span class="row">
+            <button data-i="\${i}" class="ghost">-1</button>
+            <button data-i="\${i}" class="ghost">+1</button>
+            <button data-i="\${i}" class="danger">Remove</button>
+          </span>\`;
+        list.appendChild(li);
+      });
+      list.querySelectorAll("button").forEach(b=>{
+        b.addEventListener("click", e=>{
+          const i=Number(e.target.dataset.i);
+          if(e.target.textContent==="-1"){ state.gear[i].qty=Math.max(0,state.gear[i].qty-1); }
+          else if(e.target.textContent==="+1"){ state.gear[i].qty+=1; }
+          else { state.gear.splice(i,1); }
+          renderGear(); save();
+        });
+      });
+    }
+
+    function renderWare(){
+      const list=$("#wareList"); wipe(list);
+      const slotsByType = {};
+      state.cyberware.forEach((w,i)=>{
+        const li=document.createElement("li");
+        li.innerHTML=\`<span>\${w.name} <em>(\${w.slotType}, \${w.slots} slot\${w.slots!==1?"s":""})</em></span>
+          <span class="row"><button data-i="\${i}" class="danger">Uninstall</button></span>\`;
+        list.appendChild(li);
+        slotsByType[w.slotType]=(slotsByType[w.slotType]||0)+w.slots;
+      });
+      $("#slotSummary").textContent = "Total slots used: " + Object.entries(slotsByType).map(([k,v])=>\`\${k}=\${v}\`).join(", ");
+      list.querySelectorAll("button").forEach(b=>{
+        b.addEventListener("click", e=>{
+          const i=Number(e.target.dataset.i);
+          state.cyberware.splice(i,1); renderWare(); save();
+        });
+      });
+    }
+
+    function renderMacros(){
+      const ul=$("#macroList"); wipe(ul);
+      state.macros.forEach((m,i)=>{
+        const li=document.createElement("li");
+        li.innerHTML=\`<span>\${m.name}</span>
+          <span class="row">
+            <button data-i="\${i}" class="ghost">Roll</button>
+            <button data-i="\${i}" class="danger">Delete</button>
+          </span>\`;
+        ul.appendChild(li);
+      });
+      ul.querySelectorAll("button.ghost").forEach(b=>{
+        b.addEventListener("click", e=>{
+          const m = state.macros[Number(e.target.dataset.i)];
+          doRoll(m);
+        });
+      });
+      ul.querySelectorAll("button.danger").forEach(b=>{
+        b.addEventListener("click", e=>{
+          state.macros.splice(Number(e.target.dataset.i),1);
+          renderMacros(); save();
+        });
+      });
+    }
+
+    // ---------- Events / Inputs ----------
+    ["name","role","origin","streetCred","credits","hp","maxHp","armor","notes"].forEach(id=>{
+      $("#"+id).addEventListener("change", e=>{
+        state[id] = (["streetCred","credits","hp","maxHp","armor"].includes(id)) ? Number(e.target.value)||0 : e.target.value;
+        save();
+      });
+    });
+
+    $("#addSkillBtn").addEventListener("click", ()=>{
+      state.skills.push({name:"New Skill", value:1}); renderSkills(); save();
+    });
+
+    $("#addGearBtn").addEventListener("click", ()=>{
+      const name=$("#gearName").value.trim(); const qty=Number($("#gearQty").value)||1;
+      if(!name) return; state.gear.push({name, qty}); $("#gearName").value=""; renderGear(); save();
+    });
+
+    $("#addWareBtn").addEventListener("click", ()=>{
+      const name=$("#wareName").value.trim(); const slots=Number($("#wareSlots").value)||1; const slotType=$("#wareSlotType").value;
+      if(!name) return; state.cyberware.push({name, slots, slotType}); $("#wareName").value="";
+      renderWare(); save();
+    });
+
+    $("#saveBtn").addEventListener("click", save);
+
+    // Builder
+    $("#distributeBtn").addEventListener("click", ()=>{
+      const tmpl=$("#builderTemplate").value;
+      const pool=Number($("#pointPool").value)||0;
+      const base = {Body:5,Reflex:5,Int:5,Tech:5,Cool:5,Will:5,Luck:5,Move:5};
+      const focus = {
+        solo:["Body","Reflex","Cool"],
+        netrunner:["Int","Tech","Will"],
+        tech:["Tech","Int","Reflex"],
+        fixer:["Cool","Int","Luck"],
+        custom:[]
+      }[tmpl];
+      // Simple weighted distribution
+      let weights = Object.fromEntries(DEFAULT_STATS.map(s=>[s,1]));
+      (focus||[]).forEach(s=>weights[s]+=2);
+      let poolLeft=pool;
+      while(poolLeft>0){
+        const pick = weightedPick(weights);
+        base[pick] += 1; poolLeft--;
+      }
+      state.stats = base;
+      // Add recommended skills
+      const skillsBy = {
+        solo:["Athletics","Handguns","Brawling","Perception"],
+        netrunner:["Hacking","Electronics","Stealth","Research"],
+        tech:["Mechanics","Electronics","Crafting","Field Fix"],
+        fixer:["Streetwise","Persuasion","Trade","Perception"]
+      };
+      if(tmpl!=="custom"){
+        state.skills = skillsBy[tmpl].map(n=>({name:n, value:3}));
+      }
+      renderStats(); renderSkills(); save();
+      stamp("Builder applied.");
+    });
+
+    function weightedPick(weights){
+      const entries=Object.entries(weights);
+      const total=entries.reduce((a,[,w])=>a+w,0);
+      let r=Math.random()*total;
+      for(const [k,w] of entries){ if((r-=w)<0) return k; }
+      return entries[0][0];
+    }
+
+    // Roller
+    $("#system").addEventListener("change", e=>{ state.rules.system=e.target.value; save(); });
+    $("#glitch").addEventListener("change", e=>{ state.rules.glitch=e.target.value; save(); });
+
+    $("#rollBtn").addEventListener("click", ()=>{
+      const cfg = {
+        name: "Ad-hoc",
+        stat: Number($("#rollStat").value)||0,
+        skill: Number($("#rollSkill").value)||0,
+        dice: Number($("#rollDice").value)||0,
+        target: Number($("#rollTarget").value)||0
+      };
+      doRoll(cfg);
+    });
+
+    $("#saveMacroBtn").addEventListener("click", ()=>{
+      const name=$("#macroName").value.trim(); if(!name) return;
+      const cfg = {
+        name,
+        stat: Number($("#rollStat").value)||0,
+        skill: Number($("#rollSkill").value)||0,
+        dice: Number($("#rollDice").value)||0,
+        target: Number($("#rollTarget").value)||0
+      };
+      state.macros.push(cfg); $("#macroName").value=""; renderMacros(); save();
+    });
+
+    function doRoll(cfg){
+      const out=$("#rollOut");
+      const sys=state.rules.system;
+      if(sys==="d10-add"){
+        const d10 = 1 + Math.floor(Math.random()*10);
+        const crit = (d10===10) ? " (CRIT!)" : (d10===1 ? " (FUMBLE!)" : "");
+        const total = d10 + cfg.stat + cfg.skill + cfg.dice;
+        const pass = total >= cfg.target ? "✅ Success" : "❌ Fail";
+        out.innerHTML = \`
+          <div><strong>d10:</strong> \${d10}\${crit}</div>
+          <div><strong>Total:</strong> \${total} vs <strong>Target:</strong> \${cfg.target} → <strong>\${pass}</strong></div>
+          <div class="muted tiny">Formula: d10 + Stat + Skill + Bonus</div>
+        \`;
+      } else {
+        const pool = Math.max(0, cfg.stat + cfg.skill + cfg.dice);
+        let rolls=[]; for(let i=0;i<pool;i++) rolls.push(1+Math.floor(Math.random()*6));
+        const successes = rolls.filter(r=>r>=5).length;
+        const ones = rolls.filter(r=>r===1).length;
+        let glitch = "";
+        if(state.rules.glitch==="onesHalf" && ones >= Math.ceil(pool/2)) glitch = " ⚠️ Glitch!";
+        if(state.rules.glitch==="onesAny" && ones>0) glitch = " ⚠️ Minor glitch.";
+        const pass = successes >= cfg.target ? "✅ Success" : "❌ Fail";
+        out.innerHTML = \`
+          <div><strong>Pool (\${pool}) rolls:</strong> \${rolls.join(", ")}</div>
+          <div><strong>Successes:</strong> \${successes} vs <strong>Target:</strong> \${cfg.target} → <strong>\${pass}</strong>\${glitch}</div>
+          <div class="muted tiny">5–6 = success; target means required successes.</div>
+        \`;
+      }
+    }
+
+    // Export / Import
+    $("#exportBtn").addEventListener("click", ()=>{
+      const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+      const a=document.createElement("a");
+      a.href=URL.createObjectURL(blob);
+      a.download=(state.name||"character")+".json";
+      a.click(); URL.revokeObjectURL(a.href);
+    });
+
+    $("#importFile").addEventListener("change", (e)=>{
+      const file=e.target.files[0]; if(!file) return;
+      const reader=new FileReader();
+      reader.onload=()=>{ try{
+        const data=JSON.parse(reader.result);
+        Object.assign(state, data);
+        renderEverything(); save(); stamp("Imported.");
+      } catch { alert("Bad JSON."); } };
+      reader.readAsText(file);
+    });
+
+    // ---------- Bootstrap ----------
+    function renderEverything(){
+      renderTop(); renderStats(); renderSkills(); renderGear(); renderWare(); renderMacros();
+      $("#system").value = state.rules.system;
+      $("#glitch").value = state.rules.glitch;
+    }
+    load(); renderEverything();
+  </script>
+</body>
+</html>
